@@ -38,8 +38,8 @@ COPY --from=build --chown=rajarx:rajarx /app/package.json ./
 COPY --from=build --chown=rajarx:rajarx /app/node_modules ./node_modules
 COPY --from=build --chown=rajarx:rajarx /app/dist ./dist
 COPY --from=build --chown=rajarx:rajarx /app/migrations ./migrations
-# Database file + generated secrets live here (RAJAR X HOSTING mounts the VPS folder on /data).
-VOLUME ["/data"]
+# Railway does not allow Dockerfile VOLUME instructions. /data is created above
+# and remains writable for the running container; use a Railway Volume if persistence is needed.
 
 USER rajarx
 EXPOSE 8080
