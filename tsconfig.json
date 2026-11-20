@@ -1,0 +1,5 @@
+// Editors: backend uses tsconfig.server.json, frontend uses tsconfig.client.json.
+{
+  "files": [],
+  "references": []
+}

@@ -1,0 +1,11 @@
+# /etc/logrotate.d/rajar-x — for bare-metal installs that redirect stdout to a file
+# (Docker installs: the json-file driver options in docker-compose.yml rotate logs).
+/var/log/rajar-x/*.log /var/log/nginx/rajarx.access.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}

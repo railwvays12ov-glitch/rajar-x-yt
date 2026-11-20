@@ -1,0 +1,10 @@
+{
+  "$comment": "RAJAR X HOSTING deploy settings — picked up automatically when the project is uploaded.",
+  "runtime": "Node.js",
+  "install": "npm install --include=dev --no-audit --no-fund",
+  "build": "npm run build",
+  "start": "npm start",
+  "port": 8080,
+  "autoInstallImports": false,
+  "persistentPaths": []
+}

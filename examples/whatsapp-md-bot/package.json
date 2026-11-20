@@ -1,0 +1,16 @@
+{
+  "name": "rajar-x-whatsapp-md-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reference WhatsApp MD bot that calls the RAJAR X API for authorized users only.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node baileys.mjs",
+    "test": "node --test bot-core.test.mjs"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.9",
+    "pino": "^9.5.0"
+  }
+}

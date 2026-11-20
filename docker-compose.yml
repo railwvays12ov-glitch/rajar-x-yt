@@ -1,0 +1,74 @@
+# Example production stack. Usage:
+#   cp .env.example .env   # fill in secrets, PUBLIC_BASE_URL, OWNER_EMAIL, POSTGRES_PASSWORD
+#   docker compose up -d --build
+#   docker compose exec app node dist/server/server/db/migrate.js
+services:
+  app:
+    build: .
+    image: rajar-x-yt:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://rajarx:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/rajarx
+      REDIS_URL: redis://redis:6379
+      TRUST_PROXY: uniquelocal
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    # Temporary media is NOT persisted: /tmp is a tmpfs wiped on restart. Size it to STORAGE_MAX_BYTES
+    # (or swap for a dedicated disk-backed volume if RAM is limited — still never back it up).
+    tmpfs:
+      - /tmp:size=20g,mode=1777
+    read_only: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    stop_grace_period: 40s
+    expose: ['8080']
+    networks: [internal, edge]
+    logging:
+      driver: json-file
+      options: { max-size: '20m', max-file: '5' }
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rajarx
+      POSTGRES_USER: rajarx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data # the only persistent volume
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rajarx -d rajarx']
+      interval: 10s
+      retries: 5
+    networks: [internal]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--save', '', '--appendonly', 'no', '--maxmemory', '256mb', '--maxmemory-policy', 'noeviction']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      retries: 5
+    networks: [internal]
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on: [app]
+    ports: ['80:80', '443:443']
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./deploy/certbot-webroot:/var/www/certbot:ro
+    networks: [edge]
+
+volumes:
+  pgdata:
+
+networks:
+  internal:
+    internal: true
+  edge:
